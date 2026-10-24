@@ -6,4 +6,3 @@
 - Free provider availability and limits can prevent a run. Failed content is withheld, not replaced by a paid model or unverified post. Monitor systemd journal and private attempts.json.
 - Delivery receipt means mail-provider acceptance, not guaranteed inbox delivery; investigate bounces in Resend.
 - Scope retention/backup for private evidence and SQLite as usage grows; keep any demo credentials, session state and provider keys outside Git.
-- GitHub publication blocked: both server SSH (`rahulJalan23`) and connected GitHub identity report no Write permission to Abhinav1730/linkedin-script-writer. Local main commit is ready; grant repository Write access and push normally (no force).
