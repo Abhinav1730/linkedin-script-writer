@@ -1,0 +1,137 @@
+[
+  {
+    "feature": "instant-setup",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "meeting-scheduling",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "dashboard",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "integrations",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "meeting-history",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "magic-canvas",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "live-meeting-controls",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "reactions",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "meeting-chat",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "participants",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "summary-email",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "recap-overview",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "recap-detailed-report",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "recap-todos-by-person",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "recap-screen-evidence",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "recap-transcript",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "recap-approved-tool-actions",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "camera-off-avatars",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "meeting-access-choice",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "pre-meeting-device-check",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "recording-disclosure",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "invite-link",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "camera-backgrounds",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "canvas-projects",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "canvas-briefs",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "canvas-files",
+    "passed": true,
+    "error": ""
+  },
+  {
+    "feature": "delegate-booking",
+    "passed": true,
+    "error": ""
+  }
+]

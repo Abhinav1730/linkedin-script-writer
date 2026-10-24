@@ -1,0 +1,469 @@
+[
+  {
+    "id": "instant-setup",
+    "enabled": true,
+    "path": "/meeting/new",
+    "anchor": "meeting",
+    "auth": false,
+    "claims": [
+      "Check your camera and microphone before starting an instant SmartMeet meeting.",
+      "Choose an avatar to display while your camera is off.",
+      "Choose whether anyone with the meeting link can join."
+    ],
+    "audience": "business teams",
+    "evidence_terms": [
+      "Check your camera",
+      "Choose your avatar",
+      "Open to all"
+    ]
+  },
+  {
+    "id": "meeting-scheduling",
+    "enabled": true,
+    "path": "/form",
+    "anchor": "agenda",
+    "auth": true,
+    "claims": [
+      "Schedule a meeting with a date, time and agenda in SmartMeet."
+    ],
+    "audience": "team leads",
+    "steps": [
+      {
+        "action": "click",
+        "name": "Schedule a meeting",
+        "role": "link"
+      }
+    ],
+    "evidence_terms": [
+      "agenda"
+    ]
+  },
+  {
+    "id": "dashboard",
+    "enabled": true,
+    "path": "/dashboard",
+    "anchor": "meeting",
+    "auth": true,
+    "claims": [
+      "See recent meetings, upcoming meetings and summaries from your SmartMeet dashboard."
+    ],
+    "audience": "founders"
+  },
+  {
+    "id": "integrations",
+    "enabled": true,
+    "path": "/integrations",
+    "anchor": "Integrations",
+    "auth": false,
+    "claims": [
+      "SmartMeet drafts meeting action items for connected tools and asks for approval before sending."
+    ],
+    "audience": "operations teams",
+    "evidence_terms": [
+      "Nothing is sent until you approve"
+    ]
+  },
+  {
+    "id": "meeting-history",
+    "enabled": true,
+    "path": "/recent-meetings",
+    "anchor": "meeting",
+    "auth": true,
+    "claims": [
+      "Filter your saved SmartMeet rooms by upcoming, live and completed meetings."
+    ],
+    "audience": "team leads",
+    "evidence_terms": [
+      "Upcoming",
+      "Live",
+      "Completed"
+    ]
+  },
+  {
+    "id": "magic-canvas",
+    "enabled": true,
+    "path": "/work",
+    "anchor": "Canvas",
+    "auth": false,
+    "claims": [
+      "SmartMeet Canvas provides a private workspace entry with email sign-in."
+    ],
+    "audience": "collaborating teams"
+  },
+  {
+    "id": "live-meeting-controls",
+    "enabled": true,
+    "path": "/meeting/sm_00000000-0000-4000-8000-000000000051",
+    "demo": "live",
+    "anchor": "Smart",
+    "auth": false,
+    "claims": [
+      "SmartMeet brings microphone, camera, screen sharing, chat and participant controls into one meeting workspace."
+    ],
+    "steps": [],
+    "evidence_terms": [
+      "Chat",
+      "Participants",
+      "Share"
+    ]
+  },
+  {
+    "id": "reactions",
+    "enabled": true,
+    "path": "/meeting/sm_00000000-0000-4000-8000-000000000051",
+    "demo": "live",
+    "anchor": "Smart",
+    "auth": false,
+    "claims": [
+      "SmartMeet offers visual meeting reactions, including questions and applause."
+    ],
+    "steps": [
+      {
+        "action": "click",
+        "name": "Send a reaction"
+      }
+    ],
+    "evidence_terms": [
+      "Reactions"
+    ]
+  },
+  {
+    "id": "meeting-chat",
+    "enabled": true,
+    "path": "/meeting/sm_00000000-0000-4000-8000-000000000051",
+    "demo": "live",
+    "anchor": "Chat",
+    "auth": false,
+    "claims": [
+      "SmartMeet includes a meeting chat panel alongside the call."
+    ],
+    "steps": [
+      {
+        "action": "click",
+        "name": "Meeting chat"
+      }
+    ],
+    "evidence_terms": [
+      "Chat"
+    ]
+  },
+  {
+    "id": "participants",
+    "enabled": true,
+    "path": "/meeting/sm_00000000-0000-4000-8000-000000000051",
+    "demo": "live",
+    "anchor": "Participants",
+    "auth": false,
+    "claims": [
+      "SmartMeet has a participant panel alongside its live meeting workspace."
+    ],
+    "steps": [
+      {
+        "action": "click",
+        "name": "Show participants"
+      }
+    ],
+    "evidence_terms": [
+      "Participants"
+    ]
+  },
+  {
+    "id": "summary-email",
+    "enabled": true,
+    "path": "/meeting/sm_00000000-0000-4000-8000-000000000051",
+    "demo": "live",
+    "anchor": "Summary email",
+    "auth": false,
+    "claims": [
+      "SmartMeet provides summary email preferences from the meeting controls."
+    ],
+    "steps": [
+      {
+        "action": "click",
+        "name": "More options"
+      },
+      {
+        "action": "click",
+        "name": "Summary email"
+      }
+    ],
+    "evidence_terms": [
+      "Summary email"
+    ]
+  },
+  {
+    "id": "recap-overview",
+    "enabled": true,
+    "path": "/meeting/sm_00000000-0000-4000-8000-000000000051/summary",
+    "demo": "recap",
+    "anchor": "Combined meeting summary",
+    "auth": false,
+    "claims": [
+      "SmartMeet presents meeting recaps with takeaways, discussion, decisions and an action plan."
+    ],
+    "steps": [],
+    "evidence_terms": [
+      "AI takeaways",
+      "Action plan"
+    ]
+  },
+  {
+    "id": "recap-detailed-report",
+    "enabled": true,
+    "path": "/meeting/sm_00000000-0000-4000-8000-000000000051/summary",
+    "demo": "recap",
+    "anchor": "Detailed meeting report",
+    "auth": false,
+    "claims": [
+      "SmartMeet includes a detailed meeting report alongside the recap."
+    ],
+    "steps": [
+      {
+        "action": "scroll",
+        "name": "Detailed meeting report"
+      }
+    ],
+    "evidence_terms": [
+      "Detailed meeting report"
+    ]
+  },
+  {
+    "id": "recap-todos-by-person",
+    "enabled": true,
+    "path": "/meeting/sm_00000000-0000-4000-8000-000000000051/summary",
+    "demo": "recap",
+    "anchor": "To-dos by person",
+    "auth": false,
+    "claims": [
+      "SmartMeet groups meeting follow-up tasks by person and displays their recorded deadlines."
+    ],
+    "steps": [
+      {
+        "action": "scroll",
+        "name": "To-dos by person"
+      }
+    ],
+    "evidence_terms": [
+      "To-dos by person"
+    ]
+  },
+  {
+    "id": "recap-screen-evidence",
+    "enabled": true,
+    "path": "/meeting/sm_00000000-0000-4000-8000-000000000051/summary",
+    "demo": "recap",
+    "anchor": "Shared-screen observations",
+    "auth": false,
+    "claims": [
+      "SmartMeet shows sampled shared-screen observations alongside its meeting recap."
+    ],
+    "steps": [
+      {
+        "action": "scroll",
+        "name": "Shared-screen observations"
+      }
+    ],
+    "evidence_terms": [
+      "Shared-screen observations"
+    ]
+  },
+  {
+    "id": "recap-transcript",
+    "enabled": true,
+    "path": "/meeting/sm_00000000-0000-4000-8000-000000000051/summary",
+    "demo": "recap",
+    "anchor": "Transcript",
+    "auth": false,
+    "claims": [
+      "SmartMeet lets you inspect recorded speech evidence alongside a meeting recap."
+    ],
+    "steps": [
+      {
+        "action": "scroll",
+        "name": "Transcript"
+      }
+    ],
+    "evidence_terms": [
+      "Transcript"
+    ]
+  },
+  {
+    "id": "recap-approved-tool-actions",
+    "enabled": true,
+    "path": "/meeting/sm_00000000-0000-4000-8000-000000000051/summary",
+    "demo": "recap",
+    "anchor": "Turn action items into real work",
+    "auth": false,
+    "claims": [
+      "SmartMeet asks you to sign in before sending meeting action items to your connected tools."
+    ],
+    "steps": [
+      {
+        "action": "scroll",
+        "name": "Turn action items into real work"
+      }
+    ],
+    "evidence_terms": [
+      "Sign in to send"
+    ]
+  },
+  {
+    "id": "camera-off-avatars",
+    "enabled": true,
+    "path": "/meeting/new",
+    "anchor": "meeting",
+    "auth": false,
+    "claims": [
+      "Choose a profile avatar in SmartMeet to appear when your camera is off."
+    ],
+    "audience": "business teams",
+    "evidence_terms": [
+      "Choose your avatar"
+    ],
+    "steps": []
+  },
+  {
+    "id": "meeting-access-choice",
+    "enabled": true,
+    "path": "/meeting/new",
+    "anchor": "meeting",
+    "auth": false,
+    "claims": [
+      "Choose between open-link access and host approval when setting up an instant SmartMeet meeting."
+    ],
+    "audience": "business teams",
+    "evidence_terms": [
+      "Open to all"
+    ],
+    "steps": []
+  },
+  {
+    "id": "pre-meeting-device-check",
+    "enabled": true,
+    "path": "/meeting/new",
+    "anchor": "meeting",
+    "auth": false,
+    "claims": [
+      "SmartMeet lets you check your microphone and camera before joining a meeting."
+    ],
+    "audience": "business teams",
+    "evidence_terms": [
+      "Test devices"
+    ],
+    "steps": []
+  },
+  {
+    "id": "recording-disclosure",
+    "enabled": true,
+    "path": "/meeting/new",
+    "anchor": "meeting",
+    "auth": false,
+    "claims": [
+      "SmartMeet explains that recording, when enabled, includes meeting audio, video and shared screens for the recap."
+    ],
+    "audience": "business teams",
+    "evidence_terms": [
+      "Recording, when enabled"
+    ],
+    "steps": []
+  },
+  {
+    "id": "invite-link",
+    "enabled": true,
+    "path": "/meeting/sm_00000000-0000-4000-8000-000000000051",
+    "demo": "live",
+    "anchor": "Smart",
+    "auth": false,
+    "claims": [
+      "SmartMeet provides an invite-link control in its live meeting workspace."
+    ],
+    "steps": [],
+    "evidence_terms": [
+      "Copy link"
+    ]
+  },
+  {
+    "id": "camera-backgrounds",
+    "enabled": true,
+    "path": "/meeting/new",
+    "anchor": "Camera backgrounds",
+    "auth": false,
+    "claims": [
+      "SmartMeet provides camera background choices, including a blur option."
+    ],
+    "audience": "business teams",
+    "evidence_terms": [
+      "Camera backgrounds",
+      "Blur"
+    ],
+    "steps": [
+      {
+        "action": "click",
+        "name": "Choose camera background"
+      }
+    ]
+  },
+  {
+    "id": "canvas-projects",
+    "enabled": true,
+    "path": "/work",
+    "demo": "canvas",
+    "auth": false,
+    "anchor": "Private workspace",
+    "claims": [
+      "SmartMeet Canvas organizes work into projects with private and shared spaces."
+    ],
+    "evidence_terms": [
+      "Private workspace"
+    ],
+    "steps": []
+  },
+  {
+    "id": "canvas-briefs",
+    "enabled": true,
+    "path": "/work",
+    "demo": "canvas",
+    "auth": false,
+    "anchor": "Meeting notes, decisions",
+    "claims": [
+      "SmartMeet Canvas includes briefs for meeting notes, decisions and working documents."
+    ],
+    "evidence_terms": [
+      "Meeting notes, decisions"
+    ],
+    "steps": []
+  },
+  {
+    "id": "canvas-files",
+    "enabled": true,
+    "path": "/work",
+    "demo": "canvas",
+    "auth": false,
+    "anchor": "Datasets, resources",
+    "claims": [
+      "SmartMeet Canvas includes a files workspace for datasets, resources and work you choose to share."
+    ],
+    "evidence_terms": [
+      "Datasets, resources"
+    ],
+    "steps": [
+      {
+        "action": "click",
+        "name": "Files"
+      }
+    ]
+  },
+  {
+    "id": "delegate-booking",
+    "enabled": true,
+    "path": "/book",
+    "auth": false,
+    "anchor": "Smart",
+    "claims": [
+      "SmartMeet provides a booking entry point for arranging conversations."
+    ],
+    "evidence_terms": [
+      "meeting"
+    ]
+  }
+]

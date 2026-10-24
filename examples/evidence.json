@@ -1,0 +1,7 @@
+{
+  "feature_id": "instant-setup",
+  "route": "/meeting/new",
+  "captured_at": "2026-10-24T15:15:52.661Z",
+  "observed": "Smart\nMeet\nMeeting setup\nYour preview\nCamera is off\nYou\nBackgrounds\nCheck your camera and microphone\nTest devices\nStart a meeting\nYour name\nYour email\n*\nOpen to all\nAnyone with the link can join.\nChoose your avatar\nShown when your camera is off.\nStart meeting\nYou can join with your camera and microphone off.\nSmartMeet assistant\nCan be enabled during the meeting.\nOff\nRecording, when enabled, includes meeting audio, video and shared screens for the recap. Recorded speech is processed after the meeting.\nPreparing meeting…",
+  "kind": "actual UI screenshot; no meeting started"
+}
