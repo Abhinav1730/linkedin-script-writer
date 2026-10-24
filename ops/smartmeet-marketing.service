@@ -2,9 +2,13 @@
 Description=SmartMeet marketing drafts with Hermes free models
 Wants=network-online.target
 After=network-online.target
+StartLimitIntervalSec=2h
+StartLimitBurst=3
 
 [Service]
 Type=oneshot
+Restart=on-failure
+RestartSec=15min
 WorkingDirectory=/root/linkedin-script-writer
 ExecStart=/usr/bin/python3 /root/linkedin-script-writer/ops/run.py --send
 UMask=0077

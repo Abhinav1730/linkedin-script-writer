@@ -102,3 +102,14 @@ class TransportTests(unittest.TestCase):
   with patch.object(agent.urllib.request,'urlopen',return_value=Reply(b'{"id":"controlled"}')) as opened:
    agent.request_json('https://example.invalid',{},{});request=opened.call_args.args[0]
    self.assertEqual(request.get_header('User-agent'),'SmartMeet-Marketing/1.0')
+
+class ModelResponseTests(unittest.TestCase):
+ def test_complete_json_fences_are_supported_without_scanning_prose(self):
+  from hermes_worker import parse_model_json
+  value={'approved':True,'unsupported_claims':[],'reason':'Verified against the supplied UI.'}
+  for raw in [json.dumps(value),'```json\n'+json.dumps(value)+'\n```','```\n'+json.dumps(value)+'\n```']:
+   self.assertEqual(parse_model_json(raw),value)
+  for raw in ['Here is JSON: '+json.dumps(value),'[]','```json\n{}', '{}\nextra']:
+   with self.assertRaises(ValueError):parse_model_json(raw)
+ def test_unmeasured_number_word_timings_are_rejected(self):
+  with self.assertRaises(ValueError):validate_draft({**DRAFT,'problem':'The first ten minutes become a scramble to align.'},FEATURE)

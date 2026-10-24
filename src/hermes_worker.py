@@ -1,6 +1,18 @@
 """Hermes subprocess with no tools, memory, shared credentials or context files."""
 import contextlib, io, json, os, sys
 
+def parse_model_json(raw):
+ if not isinstance(raw,str) or len(raw)>64000:raise ValueError('Invalid model response size')
+ text=raw.strip()
+ if text.startswith('```'):
+  lines=text.splitlines()
+  if len(lines)<3 or lines[0] not in ('```','```json') or lines[-1]!='```':raise ValueError('Invalid JSON fence')
+  text='\n'.join(lines[1:-1]).strip()
+ try:output=json.loads(text)
+ except json.JSONDecodeError as error:raise ValueError('Invalid model JSON') from error
+ if not isinstance(output,dict):raise ValueError('Expected JSON object')
+ return output
+
 def main():
  payload=json.load(sys.stdin);model=payload['model']
  if not (model=='openrouter/free' or model.endswith(':free')):raise ValueError('Paid model forbidden')
@@ -23,11 +35,7 @@ def main():
   else:
    rules+=''' Independently audit EVERY draft assertion against feature.claims and observed UI, not the writer's confidence. Reject extra capabilities, implied measurable outcomes, insecure claims, unsupported statements or sales guarantees. Generic business pain is acceptable when not presented as a statistic. Return exactly {"approved": boolean, "unsupported_claims": [strings], "reason": string}. Approve only if unsupported_claims is empty.'''
   result=agent.run_conversation(json.dumps(payload),system_message=rules)
-  raw=result.get('final_response','').strip()
-  if raw.startswith('```json') and raw.endswith('```'):raw=raw[7:-3].strip()
-  try:output=json.loads(raw)
-  except json.JSONDecodeError:
-   print(json.dumps({'error':'invalid_model_json','response_length':len(raw),'failed':result.get('failed')}),file=sys.__stderr__);raise
+  output=parse_model_json(result.get('final_response'))
  print(json.dumps(output))
 if __name__=='__main__':
  try:main()

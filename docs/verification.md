@@ -45,3 +45,7 @@ The checks validate operation and bounds, not revenue uplift. Sales performance 
 - Existing SmartMeet frontend, meeting APIs, media services and shared Hermes gateway were not redeployed or restarted.
 - Follow-up Resend read reports `delivered` with both requested recipients.
 - An authenticated scheduling capture also passes under the deployed unit's strict filesystem/private-temporary-directory sandbox. Existing sent-slot service execution exits successfully without resending.
+
+## Scheduled-run audit, 24 October 2026
+
+The 21:00 IST timer triggered on time, but both free-model attempts failed before delivery (malformed review output and a provider connection timeout). No email was sent for that scheduled run. Added strict complete-JSON-fence parsing, word-number timing-claim rejection, per-attempt stage/detail diagnostics, and bounded systemd retries every 15 minutes (three starts per two-hour window). All 17 Python and 2 Chromium tests pass; unit verification passes. Live recovery is recorded separately after checking delivery.
