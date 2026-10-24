@@ -57,6 +57,12 @@ class PipelineTests(unittest.TestCase):
    self.assertEqual(result['status'],'sent');self.assertEqual(len(calls),1)
    attempts=json.loads((Path(d)/'controlled'/'attempts.json').read_text());self.assertEqual([a['accepted'] for a in attempts],[False,True])
    for a in attempts:free_model(a['writer']);free_model(a['reviewer'])
+ def test_rejected_claim_feedback_reaches_next_writer(self):
+  with tempfile.TemporaryDirectory() as d:
+   seen=[];replies=iter([DRAFT,{'approved':False,'unsupported_claims':['Do not assert a customer already scheduled a meeting.']},DRAFT,{'approved':True,'unsupported_claims':[]}])
+   def model(payload):seen.append(payload);return next(replies)
+   self.pipeline(d,responses=model,attempts=2,mail=lambda *a:{'id':'corrected'})
+   self.assertIn('Do not assert a customer already scheduled a meeting.',seen[2]['feedback'])
  def test_rejected_review_never_sends(self):
   with tempfile.TemporaryDirectory() as d:
    with self.assertRaises(ValueError):self.pipeline(d,review={'approved':False,'unsupported_claims':['invented']})

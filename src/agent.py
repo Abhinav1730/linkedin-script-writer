@@ -79,23 +79,26 @@ def run(send=False,slot=None):
     if proc.returncode:raise RuntimeError('Demo screenshot capture failed')
     evidence=json.loads((folder/'evidence.json').read_text())
     if not evidence.get('observed') or evidence['feature_id']!=feature['id']:raise ValueError('Missing screenshot evidence')
-    attempts=[]
+    attempts=[];feedback=[]
     for attempt in range(min(2,max(1,int(os.environ.get('MAX_DRAFT_ATTEMPTS','2'))))):
      writer_model=model if attempt==0 else 'openrouter/free'
      reviewer_model=review_model if attempt==0 else model
      stage='write'
      try:
-      draft=hermes({'mode':'write','model':writer_model,'feature':feature,'evidence':evidence,'recent_hooks':recent_hooks(state_dir),'guidance':'Keep every sentence factual. Avoid offline, speed, comparative and outcome claims.'})
+      draft=hermes({'mode':'write','model':writer_model,'feature':feature,'evidence':evidence,'recent_hooks':recent_hooks(state_dir),'feedback':feedback,'guidance':'Keep every sentence factual. Avoid offline, speed, comparative and outcome claims.'})
       (folder/'candidate.json').write_text(json.dumps(draft,indent=2))
       stage='validate'
       text=validate_draft(draft,feature)
       stage='review'
       review=hermes({'mode':'review','model':reviewer_model,'feature':feature,'evidence':evidence,'draft':draft})
       (folder/'review.json').write_text(json.dumps(review,indent=2))
-      if review.get('approved') is not True or review.get('unsupported_claims')!=[]:raise ValueError('Factual review rejected draft')
+      if review.get('approved') is not True or review.get('unsupported_claims')!=[]:
+       feedback=review.get('unsupported_claims',[])
+       raise ValueError('Factual review rejected draft')
       attempts.append({'writer':writer_model,'reviewer':reviewer_model,'accepted':True})
       break
      except (ValueError,RuntimeError,subprocess.TimeoutExpired) as error:
+      if not feedback:feedback=[str(error)[:250]]
       attempts.append({'writer':writer_model,'reviewer':reviewer_model,'accepted':False,'error':type(error).__name__,'stage':stage,'detail':str(error)[:250]})
     else:
      (folder/'attempts.json').write_text(json.dumps(attempts,indent=2))

@@ -10,3 +10,4 @@
 - Provider follow-up confirms delivered for both recipients; sandboxed authenticated capture passes.
 - GitHub Write access resolved; verified implementation published directly to main.
 - Scheduled-run audit: 21:00 IST trigger fired but free-model review failed before email. Added complete JSON-fence handling, timing-claim guard, useful attempt diagnostics and bounded automatic service retries; 19 automated checks pass.
+- Recovery evaluation also caught invented customer scenarios/outcome guarantees. Subsequent writer attempts now receive the reviewer's rejected-claim feedback and use hypothetical marketing framing; 20 automated checks pass.
