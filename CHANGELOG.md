@@ -11,3 +11,4 @@
 - GitHub Write access resolved; verified implementation published directly to main.
 - Scheduled-run audit: 21:00 IST trigger fired but free-model review failed before email. Added complete JSON-fence handling, timing-claim guard, useful attempt diagnostics and bounded automatic service retries; 19 automated checks pass.
 - Recovery evaluation also caught invented customer scenarios/outcome guarantees. Subsequent writer attempts now receive the reviewer's rejected-claim feedback and use hypothetical marketing framing; 20 automated checks pass.
+- Recovered missed 21:00 IST draft through the deployed service at 22:15:49 IST; Resend confirms delivered to both recipients. Timer remains active for midnight/three-hour cadence; free-provider outages can still delay delivery despite retries.

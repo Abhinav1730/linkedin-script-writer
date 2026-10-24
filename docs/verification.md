@@ -49,3 +49,7 @@ The checks validate operation and bounds, not revenue uplift. Sales performance 
 ## Scheduled-run audit, 24 October 2026
 
 The 21:00 IST timer triggered on time, but both free-model attempts failed before delivery (malformed review output and a provider connection timeout). No email was sent for that scheduled run. Added strict complete-JSON-fence parsing, word-number timing-claim rejection, per-attempt stage/detail diagnostics, and bounded systemd retries every 15 minutes (three starts per two-hour window). All 17 Python and 2 Chromium tests pass; unit verification passes. Live recovery is recorded separately after checking delivery.
+
+Live recovery result: the missed 21:00 IST slot was generated, reviewed and sent through the actual sandboxed service at 22:15:49 IST. Resend reports `delivered` for both requested recipients. The earlier example also remains `delivered`. Service result is success/exit 0, timer is enabled/active, next trigger is 00:00 IST on 25 October. Automatic retry was observed queued after a failed recovery evaluation; the final recovery was started manually to verify the changes without waiting another 15 minutes. This confirms delivery and the schedule configuration, not an uninterrupted history of three-hour deliveries. Free-provider failures can still delay or withhold drafts after retries.
+
+Final audit checks: 18 Python tests plus 2 Chromium tests pass. Review feedback now reaches the next writer attempt, preventing repeated invented customer scenarios or outcome guarantees.
