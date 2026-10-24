@@ -43,3 +43,5 @@ The checks validate operation and bounds, not revenue uplift. Sales performance 
 - Explicit User-Agent fixes the provider's HTTP 403/1010 rejection of Python's default user agent; transport regression test passes. Recovery used the same provider idempotency key.
 - Fresh review identified pre-send retry, hidden evidence and duplicate-on-retry defects; each now has a passing regression test.
 - Existing SmartMeet frontend, meeting APIs, media services and shared Hermes gateway were not redeployed or restarted.
+- Follow-up Resend read reports `delivered` with both requested recipients.
+- An authenticated scheduling capture also passes under the deployed unit's strict filesystem/private-temporary-directory sandbox. Existing sent-slot service execution exits successfully without resending.
