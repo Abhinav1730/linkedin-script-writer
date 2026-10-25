@@ -26,7 +26,7 @@ class AgentTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as d:
    p=Path(d)/'screen.png'; p.write_bytes(b'png')
    body=email_payload('slot','text',p,'demo@example.org')
-   self.assertEqual(body['to'],['rahuljalan23.rj@gmail.com','abhinav.saxena1730@gmail.com'])
+   self.assertEqual(body['to'],['rahuljalan23.rj@gmail.com','abhinav.saxena1730@gmail.com','vig6604@gmail.com'])
    self.assertEqual(body['attachments'][0]['filename'],'smartmeet-demo.png')
    with self.assertRaises(ValueError): email_payload('slot','text',Path(d)/'secrets.env','demo@example.org')
 

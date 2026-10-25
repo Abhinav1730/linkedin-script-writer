@@ -2,7 +2,7 @@
 import argparse, base64, datetime as dt, fcntl, hashlib, json, os, re, sqlite3, subprocess, sys, urllib.request
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-RECIPIENTS=['rahuljalan23.rj@gmail.com','abhinav.saxena1730@gmail.com']
+RECIPIENTS=['rahuljalan23.rj@gmail.com','abhinav.saxena1730@gmail.com','vig6604@gmail.com']
 def free_model(model):
  if not isinstance(model,str) or model != model.strip() or not (model=='openrouter/free' or re.fullmatch(r'[\w./-]+:free',model)): raise ValueError('Only OpenRouter free models allowed')
  return model

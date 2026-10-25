@@ -1,3 +1,6 @@
+## 26 October 2026
+- Added vig6604@gmail.com to the configured draft email recipients and recipient regression test.
+
 # Changelog
 
 ## 2026-10-24

@@ -4,6 +4,7 @@ An independent server agent that captures SmartMeet UI, writes sales-focused Lin
 
 - rahuljalan23.rj@gmail.com
 - abhinav.saxena1730@gmail.com
+- vig6604@gmail.com
 
 Posting is manual. There is no LinkedIn token, browser login or publishing endpoint.
 
