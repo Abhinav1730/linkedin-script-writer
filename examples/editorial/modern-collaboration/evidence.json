@@ -1,0 +1,9 @@
+{
+  "type": "verified-catalog",
+  "feature_id": "meeting-scheduling",
+  "claims": [
+    "Schedule a meeting with a date, time and agenda in SmartMeet."
+  ],
+  "observed": null,
+  "note": "No UI observation or live trend research for this draft."
+}

@@ -18,6 +18,7 @@ class AgentTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as d:
    s=State(Path(d)/'state.db'); self.assertTrue(s.reserve('slot','setup')); self.assertFalse(s.reserve('slot','setup'))
    s.status('slot','sending'); self.assertFalse(s.reserve('slot','setup'))
+   s.status('slot','preview'); self.assertEqual(s.used(),['setup'])
    s.status('slot','sent'); self.assertEqual(s.used(),['setup'])
  def test_rotation(self):
   fs=[{'id':'a','enabled':True},{'id':'b','enabled':False},{'id':'c','enabled':True}]
@@ -117,5 +118,53 @@ class ModelResponseTests(unittest.TestCase):
    self.assertEqual(parse_model_json(raw),value)
   for raw in ['Here is JSON: '+json.dumps(value),'[]','```json\n{}', '{}\nextra']:
    with self.assertRaises(ValueError):parse_model_json(raw)
+ def test_unsupported_prevalence_claims_are_rejected(self):
+  for problem in ['Many teams skip the agenda.', 'Most founders miss follow-up.', 'Team leads often forget preparation.']:
+   with self.assertRaises(ValueError):validate_draft({**DRAFT,'problem':problem},FEATURE)
  def test_unmeasured_number_word_timings_are_rejected(self):
   with self.assertRaises(ValueError):validate_draft({**DRAFT,'problem':'The first ten minutes become a scramble to align.'},FEATURE)
+
+class EditorialTests(unittest.TestCase):
+ pipeline=PipelineTests.pipeline
+ def test_calendar_rotation_covers_five_pillars(self):
+  from editorial import brief_for_slot
+  import datetime as dt
+  start=dt.datetime.fromisoformat('2026-10-26T00:00:00+05:30')
+  briefs=[brief_for_slot((start+dt.timedelta(hours=3*i)).isoformat()) for i in range(5)]
+  self.assertEqual(len({b['pillar'] for b in briefs}),5)
+  self.assertEqual(sum(b['screenshot_required'] for b in briefs),1)
+ def test_text_only_ignores_stale_screenshot_and_passes_context(self):
+  with tempfile.TemporaryDirectory() as d:
+   folder=Path(d)/'controlled';folder.mkdir();(folder/'screenshot.png').write_bytes(b'stale')
+   seen=[];replies=iter([DRAFT,{'approved':True,'unsupported_claims':[]}])
+   def model(payload):seen.append(payload);return next(replies)
+   with patch.object(agent,'brief_for_slot',return_value={'pillar':'practical-advice','screenshot_required':False,'direction':'Useful advice'}):
+    result,calls=self.pipeline(d,responses=model,mail=lambda *a:{'id':'text-only'})
+   self.assertEqual(result['status'],'sent');self.assertNotIn('attachments',calls[0].args[1])
+   self.assertEqual([p['brief']['pillar'] for p in seen],['practical-advice']*2)
+   self.assertTrue(all(p['evidence']['type']=='verified-catalog' and p['evidence']['observed'] is None for p in seen))
+ def test_preview_retry_retains_brief_without_selecting_again(self):
+  with tempfile.TemporaryDirectory() as d:
+   with patch.object(agent,'brief_for_slot',return_value={'pillar':'user-value','screenshot_required':False,'direction':'User value'}):self.pipeline(d,send=False)
+   with patch.object(agent,'brief_for_slot',side_effect=AssertionError('must retain brief')):
+    result,calls=self.pipeline(d,mail=lambda *a:{'id':'persisted'})
+   self.assertNotIn('attachments',calls[0].args[1]);self.assertEqual(result['status'],'sent')
+ def test_failed_generation_retry_keeps_original_editorial_theme(self):
+  with tempfile.TemporaryDirectory() as d:
+   with patch.object(agent,'brief_for_slot',return_value={'pillar':'modern-collaboration','screenshot_required':False,'direction':'Perspective'}):
+    with self.assertRaises(ValueError):self.pipeline(d,review={'approved':False,'unsupported_claims':['invented']})
+   seen=[];replies=iter([DRAFT,{'approved':True,'unsupported_claims':[]}])
+   def model(payload):seen.append(payload);return next(replies)
+   with patch.object(agent,'brief_for_slot',side_effect=AssertionError('must retain failed brief')):
+    result,calls=self.pipeline(d,responses=model,mail=lambda *a:{'id':'retry'})
+   self.assertEqual(result['status'],'sent');self.assertEqual(seen[0]['brief']['pillar'],'modern-collaboration')
+ def test_demo_missing_screenshot_blocks_delivery(self):
+  with tempfile.TemporaryDirectory() as d:
+   with patch.object(agent,'brief_for_slot',return_value={'pillar':'feature-demo','screenshot_required':True,'direction':'Demo'}):self.pipeline(d,send=False)
+   (Path(d)/'controlled'/'screenshot.png').unlink()
+   with self.assertRaises(ValueError):self.pipeline(d,mail=lambda *a:self.fail('must not send'))
+ def test_legacy_cached_draft_requires_its_screenshot(self):
+  with tempfile.TemporaryDirectory() as d:
+   folder=Path(d)/'controlled';folder.mkdir();(folder/'draft.json').write_text(json.dumps(DRAFT));(folder/'review.json').write_text(json.dumps({'approved':True,'unsupported_claims':[]}))
+   with self.assertRaises(ValueError):self.pipeline(d,mail=lambda *a:self.fail('must not send'))
+   self.assertTrue(json.loads((folder/'brief.json').read_text())['screenshot_required'])

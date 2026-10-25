@@ -1,7 +1,10 @@
+# Changelog
+
 ## 26 October 2026
+- Added a five-theme marketing calendar covering user value, practical advice, modern collaboration, audience use cases and feature demos. Broader themes use verified catalog claims and text-only emails; demos require screenshots. Retry briefs persist and legacy delivery safeguards remain.
+- Expanded prompts to support varied narratives and qualified user benefits; independent review checks the editorial brief and evidence type. Automated checks: 25 Python and 2 browser checks pass.
 - Added vig6604@gmail.com to the configured draft email recipients and recipient regression test.
 
-# Changelog
 
 ## 2026-10-24
 - Initial independent SmartMeet LinkedIn drafting agent using installed Nous Hermes and OpenRouter free models only.

@@ -1,6 +1,6 @@
 # SmartMeet LinkedIn marketing agent
 
-An independent server agent that captures SmartMeet UI, writes sales-focused LinkedIn drafts using **Nous Hermes + OpenRouter free models**, reviews the claims and emails the draft with its screenshot to:
+An independent server agent that captures SmartMeet UI, writes sales-focused LinkedIn drafts using **Nous Hermes + OpenRouter free models**, reviews the claims and emails the draft (with a screenshot for feature demos) to:
 
 - rahuljalan23.rj@gmail.com
 - abhinav.saxena1730@gmail.com
@@ -10,9 +10,9 @@ Posting is manual. There is no LinkedIn token, browser login or publishing endpo
 
 ## How it works
 
-The IST timer runs at 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00 and 21:00. SQLite selects the least-recently attempted enabled feature. Playwright opens only allowlisted pages with the dedicated ordinary demo account, or uses labelled synthetic fixtures in the actual deployed frontend for meeting/recap/Canvas demonstrations. It does not start real meetings, invite customers or call meeting providers.
+The IST timer runs at 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00 and 21:00. The editorial calendar rotates user value, practical advice, modern collaboration, audience use cases and feature demonstrations across slots. SQLite independently selects the least-recently attempted enabled feature. Each slot retains its editorial brief on retries. Playwright opens only allowlisted pages with the dedicated ordinary demo account, or uses labelled synthetic fixtures in the actual deployed frontend for meeting/recap/Canvas demonstrations. It does not start real meetings, invite customers or call meeting providers.
 
-Only visible, redacted UI evidence and reviewed capability claims go to Hermes. Hermes has no browser, shell, mail tools, memory, shared identity files or mail credentials. The writer returns a strict JSON schema. Exact approved feature claims are inserted into the draft; a separate tool-free Hermes invocation checks the entire draft. Deterministic checks reject unsupported numbers, guarantees, offline claims, external links and malformed content. Screenshots are attached by the orchestrator, not selected by the model.
+Feature demonstrations require fresh, visible, redacted UI evidence. Other themes use the source-owned verified capability catalog and send text-only emails; an old screenshot is never attached to those drafts. Modern collaboration posts offer perspectives and hypothetical scenarios, without unsupported current trend claims. Reviewed capability claims and the editorial brief go to Hermes. Hermes has no browser, shell, mail tools, memory, shared identity files or mail credentials. The writer returns a strict JSON schema. Exact approved feature claims are inserted into the draft; a separate tool-free Hermes invocation checks the entire draft. Deterministic checks reject unsupported numbers, guarantees, offline claims, external links and malformed content. Screenshots are attached by the orchestrator, not selected by the model.
 
 Both configured model IDs must be `openrouter/free` or end in `:free`. Failed/invalid output gets at most one additional writer/reviewer attempt, entirely on free models. A failed screenshot, invalid draft or failed factual review withholds email. The service automatically retries pre-send failures after 15 minutes, up to two additional starts within two hours. Unknown or completed delivery remains blocked from automatic resending. No paid fallback. See [coverage](docs/coverage.md) for verified versus pending workflows. An automated reviewer reduces errors; humans still review every draft before posting.
 

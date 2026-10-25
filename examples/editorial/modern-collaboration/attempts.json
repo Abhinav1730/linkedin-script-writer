@@ -1,0 +1,7 @@
+[
+  {
+    "writer": "nvidia/nemotron-3.5-lightning:free",
+    "reviewer": "openrouter/free",
+    "accepted": true
+  }
+]

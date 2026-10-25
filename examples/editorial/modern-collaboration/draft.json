@@ -1,0 +1,13 @@
+{
+  "hook": "Starting a meeting without a defined agenda leaves participants uncertain about the discussion focus.",
+  "problem": "When a meeting is scheduled without a clear agenda, participants may arrive unprepared to contribute effectively.",
+  "benefit": "can help participants arrive prepared and keep discussions focused on intended outcomes.",
+  "claim_ids": [
+    0
+  ],
+  "cta": "Explore SmartMeet: https://smartmeet.org",
+  "hashtags": [
+    "Agenda",
+    "Collaboration"
+  ]
+}

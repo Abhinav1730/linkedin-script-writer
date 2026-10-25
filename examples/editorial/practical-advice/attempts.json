@@ -1,0 +1,15 @@
+[
+  {
+    "writer": "nvidia/nemotron-3.5-lightning:free",
+    "reviewer": "openrouter/free",
+    "accepted": false,
+    "error": "ValueError",
+    "stage": "review",
+    "detail": "Factual review rejected draft"
+  },
+  {
+    "writer": "openrouter/free",
+    "reviewer": "nvidia/nemotron-3.5-lightning:free",
+    "accepted": true
+  }
+]

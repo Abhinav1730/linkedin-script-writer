@@ -1,6 +1,7 @@
 """Evidence-controlled marketing pipeline. No LinkedIn publishing capability."""
 import argparse, base64, datetime as dt, fcntl, hashlib, json, os, re, sqlite3, subprocess, sys, urllib.request
 from pathlib import Path
+from editorial import brief_for_slot
 ROOT=Path(__file__).resolve().parents[1]
 RECIPIENTS=['rahuljalan23.rj@gmail.com','abhinav.saxena1730@gmail.com','vig6604@gmail.com']
 def free_model(model):
@@ -18,6 +19,7 @@ def validate_draft(d,f):
  creative=' '.join(d[k] for k in ['hook','problem','benefit'])
  if re.search(r'\d|https?://|@|guarantee|proven|best in|increase.*sales|double|triple|save.*hours|offline|in seconds|in minutes|seamless|GDPR|HIPAA',creative,re.I): raise ValueError('Unsupported marketing assertion')
  if re.search(r'\b(one|two|three|four|five|six|seven|eight|nine|ten|twenty|thirty|sixty|hundred)\s+(seconds?|minutes?|hours?)\b',creative,re.I):raise ValueError('Unmeasured timing claim')
+ if re.search(r'\b(many|most|all)\s+(teams|founders|businesses|companies|users|people)\b|\b(teams|team leads|founders|businesses|companies|users|people)\s+(often|usually|always|typically)\b',creative,re.I):raise ValueError('Unsupported audience prevalence claim')
  if len(text)>2800: raise ValueError('LinkedIn length')
  return text
 
@@ -31,16 +33,19 @@ class State:
    cursor=self.db.execute("UPDATE runs SET status='reserved' WHERE slot=? AND status IN ('failed','preview')",(slot,));self.db.commit();return cursor.rowcount==1
  def status(self,slot,status):
   self.db.execute('UPDATE runs SET status=?,updated=? WHERE slot=?',(status,dt.datetime.now(dt.timezone.utc).isoformat(),slot));self.db.commit()
- def used(self): return [r[0] for r in self.db.execute("SELECT feature FROM runs WHERE status IN ('sent','failed') ORDER BY updated")]
+ def used(self): return [r[0] for r in self.db.execute("SELECT feature FROM runs WHERE status IN ('sent','failed','preview') ORDER BY updated")]
 
 def choose_feature(features,history):
  enabled=[f for f in features if f.get('enabled')]
  if not enabled:raise ValueError('No verified feature available')
  return min(enabled,key=lambda f:max((i for i,v in enumerate(history) if v==f['id']),default=-1))
 
-def email_payload(slot,text,screenshot,sender):
- if screenshot.suffix!='.png' or not screenshot.is_file() or screenshot.stat().st_size>5_000_000:raise ValueError('Invalid screenshot')
- return {'from':sender,'to':RECIPIENTS,'subject':'SmartMeet LinkedIn draft — '+slot,'text':'Ready for your review and manual LinkedIn posting. Screenshot uses a dedicated demo account.\n\n'+text,'attachments':[{'filename':'smartmeet-demo.png','content':base64.b64encode(screenshot.read_bytes()).decode()}]}
+def email_payload(slot,text,screenshot,sender,brief=None):
+ if screenshot is not None and (screenshot.suffix!='.png' or not screenshot.is_file() or screenshot.stat().st_size>5_000_000):raise ValueError('Invalid screenshot')
+ note='Screenshot uses a dedicated demo account.' if screenshot is not None else 'Text-only marketing draft; product claims use the verified capability catalog.'
+ body={'from':sender,'to':RECIPIENTS,'subject':'SmartMeet LinkedIn draft — '+slot,'text':'Ready for your review and manual LinkedIn posting. '+note+'\nEditorial theme: '+(brief or {}).get('pillar','feature-demo')+'\n\n'+text}
+ if screenshot is not None:body['attachments']=[{'filename':'smartmeet-demo.png','content':base64.b64encode(screenshot.read_bytes()).decode()}]
+ return body
 
 def request_json(url,body,headers):
  req=urllib.request.Request(url,data=json.dumps(body).encode(),headers={'Content-Type':'application/json','User-Agent':'SmartMeet-Marketing/1.0',**headers})
@@ -69,28 +74,39 @@ def run(send=False,slot=None):
   feature=next(f for f in features if f['id']==state.db.execute('SELECT feature FROM runs WHERE slot=?',(slot,)).fetchone()[0])
   folder=state_dir/slot;folder.mkdir(mode=0o700,exist_ok=True)
   try:
+   brief_path=folder/'brief.json'
+   if brief_path.exists():brief=json.loads(brief_path.read_text())
+   else:
+    brief={'pillar':'feature-demo','screenshot_required':True,'direction':'Continue this legacy screenshot-backed draft.'} if (folder/'draft.json').exists() else brief_for_slot(slot)
+    brief_path.write_text(json.dumps(brief,indent=2))
    if (folder/'draft.json').exists() and (folder/'review.json').exists():
     draft=json.loads((folder/'draft.json').read_text());text=validate_draft(draft,feature)
     review=json.loads((folder/'review.json').read_text())
     (folder/'review.json').write_text(json.dumps(review,indent=2))
     if review.get('approved') is not True or review.get('unsupported_claims')!=[]:raise ValueError('Unapproved stored draft')
    else:
-    proc=subprocess.run(['node',str(ROOT/'src/capture.mjs')],input=json.dumps({'feature':feature,'out':str(folder)}),capture_output=True,text=True,timeout=90,env={k:os.environ[k] for k in ['PATH','HOME','DEMO_EMAIL','DEMO_PASSWORD','PLAYWRIGHT_BROWSERS_PATH'] if k in os.environ})
-    if proc.returncode:raise RuntimeError('Demo screenshot capture failed')
-    evidence=json.loads((folder/'evidence.json').read_text())
-    if not evidence.get('observed') or evidence['feature_id']!=feature['id']:raise ValueError('Missing screenshot evidence')
+    if brief['screenshot_required']:
+     proc=subprocess.run(['node',str(ROOT/'src/capture.mjs')],input=json.dumps({'feature':feature,'out':str(folder)}),capture_output=True,text=True,timeout=90,env={k:os.environ[k] for k in ['PATH','HOME','DEMO_EMAIL','DEMO_PASSWORD','PLAYWRIGHT_BROWSERS_PATH'] if k in os.environ})
+     if proc.returncode:raise RuntimeError('Demo screenshot capture failed')
+     evidence=json.loads((folder/'evidence.json').read_text())
+     if not evidence.get('observed') or evidence['feature_id']!=feature['id']:raise ValueError('Missing screenshot evidence')
+     evidence['type']='observed-ui'
+     (folder/'evidence.json').write_text(json.dumps(evidence,indent=2))
+    else:
+     evidence={'type':'verified-catalog','feature_id':feature['id'],'claims':feature['claims'],'observed':None,'note':'No UI observation or live trend research for this draft.'}
+     (folder/'evidence.json').write_text(json.dumps(evidence,indent=2))
     attempts=[];feedback=[]
     for attempt in range(min(2,max(1,int(os.environ.get('MAX_DRAFT_ATTEMPTS','2'))))):
      writer_model=model if attempt==0 else 'openrouter/free'
      reviewer_model=review_model if attempt==0 else model
      stage='write'
      try:
-      draft=hermes({'mode':'write','model':writer_model,'feature':feature,'evidence':evidence,'recent_hooks':recent_hooks(state_dir),'feedback':feedback,'guidance':'Keep every sentence factual. Avoid offline, speed, comparative and outcome claims.'})
+      draft=hermes({'mode':'write','model':writer_model,'feature':feature,'brief':brief,'evidence':evidence,'recent_hooks':recent_hooks(state_dir),'feedback':feedback,'guidance':'Keep every sentence factual. Avoid offline, speed, comparative and outcome claims.'})
       (folder/'candidate.json').write_text(json.dumps(draft,indent=2))
       stage='validate'
       text=validate_draft(draft,feature)
       stage='review'
-      review=hermes({'mode':'review','model':reviewer_model,'feature':feature,'evidence':evidence,'draft':draft})
+      review=hermes({'mode':'review','model':reviewer_model,'feature':feature,'brief':brief,'evidence':evidence,'draft':draft})
       (folder/'review.json').write_text(json.dumps(review,indent=2))
       if review.get('approved') is not True or review.get('unsupported_claims')!=[]:
        feedback=review.get('unsupported_claims',[])
@@ -107,7 +123,7 @@ def run(send=False,slot=None):
     (folder/'draft.json').write_text(json.dumps(draft,indent=2));(folder/'draft.txt').write_text(text)
    if any(draft['hook'].casefold()==h.casefold() for h in recent_hooks(state_dir,exclude=folder)):raise ValueError('Repeated hook')
    if not send:state.status(slot,'preview');return {'status':'preview','directory':str(folder)}
-   payload=email_payload(slot,text,folder/'screenshot.png',os.environ['EMAIL_FROM'])
+   payload=email_payload(slot,text,folder/'screenshot.png' if brief['screenshot_required'] else None,os.environ['EMAIL_FROM'],brief)
    state.status(slot,'sending')
    result=request_json('https://api.resend.com/emails',payload,{'Authorization':'Bearer '+os.environ['RESEND_API_KEY'],'Idempotency-Key':'smartmeet-'+hashlib.sha256(slot.encode()).hexdigest()})
    if not result.get('id'):raise RuntimeError('Missing delivery receipt')

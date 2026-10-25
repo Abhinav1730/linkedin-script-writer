@@ -1,0 +1,11 @@
+{
+  "type": "verified-catalog",
+  "feature_id": "instant-setup",
+  "claims": [
+    "Check your camera and microphone before starting an instant SmartMeet meeting.",
+    "Choose an avatar to display while your camera is off.",
+    "Choose whether anyone with the meeting link can join."
+  ],
+  "observed": null,
+  "note": "No UI observation or live trend research for this draft."
+}
