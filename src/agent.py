@@ -4,9 +4,6 @@ from pathlib import Path
 from editorial import brief_for_slot
 ROOT=Path(__file__).resolve().parents[1]
 RECIPIENTS=['rahuljalan23.rj@gmail.com','abhinav.saxena1730@gmail.com','vig6604@gmail.com']
-def free_model(model):
- if not isinstance(model,str) or model != model.strip() or not (model=='openrouter/free' or re.fullmatch(r'[\w./-]+:free',model)): raise ValueError('Only OpenRouter free models allowed')
- return model
 
 def validate_draft(d,f):
  if not isinstance(d,dict) or set(d)!={'hook','problem','benefit','claim_ids','cta','hashtags'}: raise ValueError('Draft schema')
@@ -51,21 +48,29 @@ def request_json(url,body,headers):
  req=urllib.request.Request(url,data=json.dumps(body).encode(),headers={'Content-Type':'application/json','User-Agent':'SmartMeet-Marketing/1.0',**headers})
  with urllib.request.urlopen(req,timeout=45) as res:return json.load(res)
 
-def hermes(payload):
- env={k:os.environ[k] for k in ['PATH','OPENROUTER_API_KEY','HERMES_HOME'] if k in os.environ}
- env.update(PYTHON_DOTENV_DISABLED='1',PYTHONNOUSERSITE='1',PYTHONDONTWRITEBYTECODE='1')
- p=subprocess.run([os.environ.get('HERMES_PYTHON','/usr/local/lib/hermes-agent/venv/bin/python'),str(ROOT/'src/hermes_worker.py')],input=json.dumps(payload),text=True,capture_output=True,env=env,timeout=120)
- if p.returncode:raise RuntimeError('Hermes inference failed: '+p.stderr[-200:])
- return json.loads(p.stdout)
+def codex_model(model):
+ if not model:return 'subscription-default'
+ if not isinstance(model,str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,99}',model):raise ValueError('Invalid Codex model')
+ return model
+
+def inference(payload):
+ env={k:os.environ[k] for k in ['PATH','HOME','CODEX_HOME','MARKETING_CODEX_BIN','LANG','SSL_CERT_FILE','SSL_CERT_DIR','HTTPS_PROXY','HTTP_PROXY','NO_PROXY'] if k in os.environ}
+ env.update(PYTHONNOUSERSITE='1',PYTHONDONTWRITEBYTECODE='1')
+ p=subprocess.run(['/usr/bin/python3',str(ROOT/'src/codex_worker.py')],input=json.dumps(payload),text=True,capture_output=True,env=env,timeout=120)
+ if p.returncode:raise RuntimeError('Codex subscription inference failed: '+p.stderr[-200:])
+ result=json.loads(p.stdout)
+ if result.get('runtime',{}).get('provider')!='codex-subscription':raise RuntimeError('Subscription runtime not confirmed')
+ runtime=Path(os.environ.get('AGENT_STATE_DIR',str(ROOT/'var')))/'runtime';runtime.mkdir(parents=True,exist_ok=True,mode=0o700)
+ with (runtime/'codex-calls.jsonl').open('a') as log:log.write(json.dumps({'at':dt.datetime.now(dt.timezone.utc).isoformat(),'mode':payload['mode'],**result['runtime']})+'\n')
+ return result['output']
 
 def run(send=False,slot=None):
  state_dir=Path(os.environ.get('AGENT_STATE_DIR',str(ROOT/'var')));state_dir.mkdir(parents=True,exist_ok=True,mode=0o700)
  with (state_dir/'run.lock').open('w') as lock:
   try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
   except BlockingIOError:return {'status':'already_running'}
-  model=free_model(os.environ.get('OPENROUTER_MODEL','nvidia/nemotron-3.5-lightning:free'))
-  review_model=free_model(os.environ.get('OPENROUTER_REVIEW_MODEL','openrouter/free'))
-  if not os.environ.get('OPENROUTER_API_KEY'):raise ValueError('OPENROUTER_API_KEY missing')
+  model=codex_model(os.environ.get('MARKETING_CODEX_MODEL',''))
+  review_model=codex_model(os.environ.get('MARKETING_CODEX_REVIEW_MODEL',''))
   now=dt.datetime.now(dt.timezone(dt.timedelta(hours=5,minutes=30)))
   slot=slot or now.replace(hour=now.hour//3*3,minute=0,second=0,microsecond=0).isoformat()
   if not re.fullmatch(r'[A-Za-z0-9_:+.-]{1,90}',slot):raise ValueError('Invalid slot')
@@ -97,28 +102,28 @@ def run(send=False,slot=None):
      (folder/'evidence.json').write_text(json.dumps(evidence,indent=2))
     attempts=[];feedback=[]
     for attempt in range(min(2,max(1,int(os.environ.get('MAX_DRAFT_ATTEMPTS','2'))))):
-     writer_model=model if attempt==0 else 'openrouter/free'
-     reviewer_model=review_model if attempt==0 else model
+     writer_model=model
+     reviewer_model=review_model
      stage='write'
      try:
-      draft=hermes({'mode':'write','model':writer_model,'feature':feature,'brief':brief,'evidence':evidence,'recent_hooks':recent_hooks(state_dir),'feedback':feedback,'guidance':'Keep every sentence factual. Avoid offline, speed, comparative and outcome claims.'})
+      draft=inference({'mode':'write','model':writer_model,'feature':feature,'brief':brief,'evidence':evidence,'recent_hooks':recent_hooks(state_dir),'feedback':feedback,'guidance':'Keep every sentence factual. Avoid offline, speed, comparative and outcome claims.'})
       (folder/'candidate.json').write_text(json.dumps(draft,indent=2))
       stage='validate'
       text=validate_draft(draft,feature)
       stage='review'
-      review=hermes({'mode':'review','model':reviewer_model,'feature':feature,'brief':brief,'evidence':evidence,'draft':draft})
+      review=inference({'mode':'review','model':reviewer_model,'feature':feature,'brief':brief,'evidence':evidence,'draft':draft})
       (folder/'review.json').write_text(json.dumps(review,indent=2))
       if review.get('approved') is not True or review.get('unsupported_claims')!=[]:
        feedback=review.get('unsupported_claims',[])
        raise ValueError('Factual review rejected draft')
-      attempts.append({'writer':writer_model,'reviewer':reviewer_model,'accepted':True})
+      attempts.append({'provider':'codex-subscription','writer':writer_model,'reviewer':reviewer_model,'accepted':True})
       break
      except (ValueError,RuntimeError,subprocess.TimeoutExpired) as error:
       if not feedback:feedback=[str(error)[:250]]
-      attempts.append({'writer':writer_model,'reviewer':reviewer_model,'accepted':False,'error':type(error).__name__,'stage':stage,'detail':str(error)[:250]})
+      attempts.append({'provider':'codex-subscription','writer':writer_model,'reviewer':reviewer_model,'accepted':False,'error':type(error).__name__,'stage':stage,'detail':str(error)[:250]})
     else:
      (folder/'attempts.json').write_text(json.dumps(attempts,indent=2))
-     raise ValueError('No approved draft within free-model attempt budget')
+     raise ValueError('No approved draft within Codex subscription attempt budget')
     (folder/'attempts.json').write_text(json.dumps(attempts,indent=2))
     (folder/'draft.json').write_text(json.dumps(draft,indent=2));(folder/'draft.txt').write_text(text)
    if any(draft['hook'].casefold()==h.casefold() for h in recent_hooks(state_dir,exclude=folder)):raise ValueError('Repeated hook')

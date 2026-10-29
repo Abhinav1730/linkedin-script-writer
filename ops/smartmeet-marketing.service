@@ -1,5 +1,5 @@
 [Unit]
-Description=SmartMeet marketing drafts with Hermes free models
+Description=SmartMeet marketing drafts with Codex subscription
 Wants=network-online.target
 After=network-online.target
 StartLimitIntervalSec=2h
@@ -9,12 +9,14 @@ StartLimitBurst=3
 Type=oneshot
 Restart=on-failure
 RestartSec=15min
-WorkingDirectory=/root/linkedin-script-writer
-ExecStart=/usr/bin/python3 /root/linkedin-script-writer/ops/run.py --send
+WorkingDirectory=/srv/smartmeet-marketing/current
+ExecStart=/usr/bin/python3 /srv/smartmeet-marketing/current/ops/run.py --send
 UMask=0077
 TimeoutStartSec=12min
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ReadWritePaths=/var/lib/smartmeet-marketing
+# Reuse the existing subscription sign-in, including supported token refresh.
+ReadWritePaths=/root/.codex
 ProtectHome=read-only

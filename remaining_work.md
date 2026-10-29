@@ -9,3 +9,8 @@
 
 - Collect feedback on the five editorial themes; current collaboration posts are perspectives, not live trend research. Illustrative graphics are not generated.
 - Human copy editing remains necessary: the approved collaboration preview contains a benefit sentence fragment; automated factual review does not guarantee polished prose.
+# Codex subscription switch, 29 October 2026
+
+- [x] Writer/reviewer adapter, subscription-authentication/tool guards, current CLI acceptance, existing pipeline tests and real no-send preview.
+- [ ] Idle marketing-only rollout, fresh service-sandbox acceptance, removal of obsolete provider settings, and confirmation of the existing timer.
+- [ ] Reaccept future Codex CLI versions before changing the pinned version; monitor subscription quota through ordinary job status.

@@ -1,15 +1,16 @@
 import sys, unittest, tempfile, json
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'src'))
-from agent import free_model, validate_draft, State, email_payload, choose_feature
+from agent import codex_model, validate_draft, State, email_payload, choose_feature
 
 FEATURE={'id':'instant-setup','claims':['Choose microphone and camera before joining.'],'audience':'team leads'}
 DRAFT={'hook':'Your next meeting starts before the first hello.','problem':'Scrambling to prepare can interrupt your focus.','benefit':'Give your team a more deliberate start.','claim_ids':[0],'cta':'Explore SmartMeet: https://smartmeet.org','hashtags':['SmartMeet','TeamWork']}
 class AgentTests(unittest.TestCase):
- def test_free_only(self):
-  for m in ['openrouter/free','qwen/test:free']: self.assertEqual(free_model(m),m)
-  for m in ['openrouter/auto','gpt-4','test:free ', '',None]:
-   with self.assertRaises(ValueError): free_model(m)
+ def test_codex_models(self):
+  self.assertEqual(codex_model(''),'subscription-default')
+  self.assertEqual(codex_model('gpt-6-luna'),'gpt-6-luna')
+  for value in ['openrouter/free','vendor/model:free','gpt-6-luna ',42]:
+   with self.assertRaises(ValueError):codex_model(value)
  def test_draft_contract(self):
   self.assertIn(FEATURE['claims'][0],validate_draft(DRAFT,FEATURE))
   for change in [{'claim_ids':[99]},{'hook':'Guaranteed 10x sales'},{'cta':'https://evil.example'},{'extra':'x'},{'claim_ids':[]},{'benefit':'Choose an avatar while offline in seconds.'},{'hashtags':['hello\nBcc: evil']}]:
@@ -39,7 +40,7 @@ class PipelineTests(unittest.TestCase):
   def capture(*args,**kw):
    data=json.loads(kw['input']);folder=Path(data['out']);(folder/'evidence.json').write_text(json.dumps({'feature_id':data['feature']['id'],'observed':'Demo UI'}));(folder/'screenshot.png').write_bytes(b'png');return SimpleNamespace(returncode=0)
   feature={**FEATURE,'enabled':True}
-  with patch.dict(os.environ,{'AGENT_STATE_DIR':d,'OPENROUTER_API_KEY':'fake','RESEND_API_KEY':'fake','EMAIL_FROM':'demo@example.org','MAX_DRAFT_ATTEMPTS':str(attempts)}),patch.object(agent.json,'loads',wraps=json.loads),patch.object(agent.subprocess,'run',side_effect=capture),patch.object(agent,'hermes',side_effect=responses or [DRAFT,review or {'approved':True,'unsupported_claims':[]}]),patch.object(agent,'request_json',side_effect=mail) as req,patch.object(agent,'choose_feature',return_value=feature):
+  with patch.dict(os.environ,{'AGENT_STATE_DIR':d,'RESEND_API_KEY':'fake','EMAIL_FROM':'demo@example.org','MAX_DRAFT_ATTEMPTS':str(attempts)}),patch.object(agent.json,'loads',wraps=json.loads),patch.object(agent.subprocess,'run',side_effect=capture),patch.object(agent,'inference',side_effect=responses or [DRAFT,review or {'approved':True,'unsupported_claims':[]}]),patch.object(agent,'request_json',side_effect=mail) as req,patch.object(agent,'choose_feature',return_value=feature):
    result=agent.run(send,slot='controlled');return result,req.call_args_list
  def test_controlled_send_and_duplicate(self):
   with tempfile.TemporaryDirectory() as d:
@@ -51,13 +52,13 @@ class PipelineTests(unittest.TestCase):
    with (Path(d)/'run.lock').open('w') as lock:
     fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
     self.assertEqual(self.pipeline(d)[0]['status'],'already_running')
- def test_second_free_attempt_can_recover_rejected_first_draft(self):
+ def test_second_subscription_attempt_can_recover_rejected_first_draft(self):
   with tempfile.TemporaryDirectory() as d:
    replies=[DRAFT,{'approved':False,'unsupported_claims':['invented']},DRAFT,{'approved':True,'unsupported_claims':[]}]
    result,calls=self.pipeline(d,responses=replies,attempts=2,mail=lambda *a:{'id':'recovered'})
    self.assertEqual(result['status'],'sent');self.assertEqual(len(calls),1)
    attempts=json.loads((Path(d)/'controlled'/'attempts.json').read_text());self.assertEqual([a['accepted'] for a in attempts],[False,True])
-   for a in attempts:free_model(a['writer']);free_model(a['reviewer'])
+   for a in attempts:self.assertEqual(a['provider'],'codex-subscription');self.assertNotIn('openrouter',a['writer']);self.assertNotIn('openrouter',a['reviewer'])
  def test_rejected_claim_feedback_reaches_next_writer(self):
   with tempfile.TemporaryDirectory() as d:
    seen=[];replies=iter([DRAFT,{'approved':False,'unsupported_claims':['Do not assert a customer already scheduled a meeting.']},DRAFT,{'approved':True,'unsupported_claims':[]}])
@@ -86,19 +87,39 @@ class PipelineTests(unittest.TestCase):
    for attempt in range(2):
     with self.assertRaises(ValueError):self.pipeline(d,mail=lambda *a:{'id':'must-not-send'})
 
-class WorkerTests(unittest.TestCase):
- def test_isolated_hermes_transport_and_tools(self):
-  import importlib.util,io,types,contextlib
-  spec=importlib.util.spec_from_file_location('marketing_worker',agent.ROOT/'src/hermes_worker.py');worker=importlib.util.module_from_spec(spec);spec.loader.exec_module(worker)
-  instances=[]
-  class FakeAgent:
-   def __init__(self,**kwargs):self.kwargs=kwargs;self.tools=[];instances.append(self)
-   def run_conversation(self,*args,**kwargs):
-    self.asserted=(self._disable_streaming,self._api_max_retries);return {'final_response':json.dumps(DRAFT)}
-  loader=types.SimpleNamespace(load_hermes_dotenv=lambda **kwargs:None)
-  with patch.dict(sys.modules,{'hermes_cli':types.SimpleNamespace(env_loader=loader),'run_agent':types.SimpleNamespace(AIAgent=FakeAgent)}),patch.dict(os.environ,{'OPENROUTER_API_KEY':'fake'}),patch.object(sys,'stdin',io.StringIO(json.dumps({'model':'openrouter/free','mode':'write'}))),contextlib.redirect_stdout(io.StringIO()) as output:
-   worker.main()
-  self.assertEqual(json.loads(output.getvalue()),DRAFT);self.assertEqual(instances[0].asserted,(True,1));self.assertEqual(instances[0].kwargs['enabled_toolsets'],[]);self.assertIsNone(instances[0].kwargs['fallback_model']);self.assertTrue(instances[0].kwargs['skip_context_files'])
+class CodexWorkerTests(unittest.TestCase):
+ def test_inference_environment_never_forwards_provider_or_mail_keys(self):
+  from codex_worker import subscription_environment
+  env=subscription_environment({'HOME':'/root','CODEX_HOME':'/root/.codex','PATH':'/bin','OPENAI_API_KEY':'paid','CODEX_API_KEY':'paid','OPENAI_BASE_URL':'paid','OPENROUTER_API_KEY':'router','RESEND_API_KEY':'mail','DEMO_PASSWORD':'private'})
+  self.assertEqual(set(env),{'HOME','CODEX_HOME','PATH'})
+ def test_tools_and_approval_requests_are_rejected(self):
+  from codex_worker import Rpc
+  import io
+  rpc=object.__new__(Rpc);rpc.process=SimpleNamespace(stdin=io.BytesIO());rpc.reply='';rpc.usage=None;rpc.completed=None
+  with self.assertRaises(RuntimeError):rpc.handle({'method':'item/started','params':{'item':{'type':'commandExecution'}}})
+  with self.assertRaises(RuntimeError):rpc.handle({'method':'item/tool/call','id':1,'params':{}})
+ def test_writer_and_reviewer_have_strict_distinct_output_schemas(self):
+  from codex_worker import schema_for
+  self.assertFalse(schema_for('write')['additionalProperties'])
+  self.assertIn('claim_ids',schema_for('write')['required'])
+  self.assertIn('approved',schema_for('review')['required'])
+  with self.assertRaises(ValueError):schema_for('publish')
+ def test_api_key_account_is_refused_before_any_turn(self):
+  import codex_worker
+  methods=[]
+  class FakeRpc:
+   def __init__(self,*args):pass
+   def call(self,method,params):
+    methods.append(method)
+    return {'account':{'type':'apiKey'}} if method=='account/read' else {}
+   def write(self,*args):pass
+   def close(self):pass
+  def inspect(args,**kwargs):
+   return SimpleNamespace(returncode=0,stdout='codex-cli 0.164.0' if '--version' in args else '[]' if 'mcp' in args else 'shell_tool stable true')
+  process=SimpleNamespace(terminate=lambda:None,wait=lambda **kwargs:None)
+  with patch.dict(os.environ,{'MARKETING_CODEX_BIN':'/fake/codex'}),patch.object(codex_worker.subprocess,'run',side_effect=inspect),patch.object(codex_worker.subprocess,'Popen',return_value=process),patch.object(codex_worker,'Rpc',FakeRpc):
+   with self.assertRaisesRegex(RuntimeError,'subscription sign-in required'):codex_worker.generate({'mode':'write'})
+  self.assertNotIn('turn/start',methods)
 
 class TransportTests(unittest.TestCase):
  def test_provider_request_identifies_agent(self):
@@ -112,7 +133,7 @@ class TransportTests(unittest.TestCase):
 
 class ModelResponseTests(unittest.TestCase):
  def test_complete_json_fences_are_supported_without_scanning_prose(self):
-  from hermes_worker import parse_model_json
+  from model_json import parse_model_json
   value={'approved':True,'unsupported_claims':[],'reason':'Verified against the supplied UI.'}
   for raw in [json.dumps(value),'```json\n'+json.dumps(value)+'\n```','```\n'+json.dumps(value)+'\n```']:
    self.assertEqual(parse_model_json(raw),value)
