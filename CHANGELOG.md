@@ -4,6 +4,7 @@
 - Switch both the marketing writer and independent reviewer from Hermes/OpenRouter to the existing Codex ChatGPT subscription app-server integration. Require subscription authentication, disable tools/context import, use strict schemas and retain measured model/usage metadata.
 - Remove the old inference worker and OpenRouter configuration template. Preserve writing/review prompts, editorial cadence, recipient list, screenshot evidence, bounded retries and durable email duplication protection. No API-key or paid fallback.
 - All 28 Python and two browser-policy tests pass. Real subscription review and a full approved writer/reviewer preview pass without sending email. See [acceptance and rollout](docs/codex-subscription-2026-10-29.md).
+- Deployed the immutable Codex release, removed obsolete protected marketing provider settings, passed a fresh writer/reviewer preview under the production systemd sandbox, and resumed the original timer. Delivery state and unrelated SmartMeet processes were preserved. No test email sent.
 
 ## 26 October 2026
 - Added a five-theme marketing calendar covering user value, practical advice, modern collaboration, audience use cases and feature demos. Broader themes use verified catalog claims and text-only emails; demos require screenshots. Retry briefs persist and legacy delivery safeguards remain.

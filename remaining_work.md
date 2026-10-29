@@ -12,5 +12,5 @@
 # Codex subscription switch, 29 October 2026
 
 - [x] Writer/reviewer adapter, subscription-authentication/tool guards, current CLI acceptance, existing pipeline tests and real no-send preview.
-- [ ] Idle marketing-only rollout, fresh service-sandbox acceptance, removal of obsolete provider settings, and confirmation of the existing timer.
+- [x] Idle marketing-only rollout, fresh service-sandbox acceptance, removal of obsolete provider settings, and confirmation of the existing timer. Evidence: `/var/lib/smartmeet-marketing/verification/codex-switch-20261029`.
 - [ ] Reaccept future Codex CLI versions before changing the pinned version; monitor subscription quota through ordinary job status.
