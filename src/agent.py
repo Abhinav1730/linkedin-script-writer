@@ -3,7 +3,7 @@ import argparse, base64, datetime as dt, fcntl, hashlib, json, os, re, sqlite3, 
 from pathlib import Path
 from editorial import brief_for_slot
 ROOT=Path(__file__).resolve().parents[1]
-RECIPIENTS=['rahuljalan23.rj@gmail.com','abhinav.saxena1730@gmail.com','vig6604@gmail.com']
+RECIPIENTS=['rahuljalan23.rj@gmail.com','abhinav.saxena1730@gmail.com']
 
 def validate_draft(d,f):
  if not isinstance(d,dict) or set(d)!={'hook','problem','benefit','claim_ids','cta','hashtags'}: raise ValueError('Draft schema')

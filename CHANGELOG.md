@@ -1,5 +1,8 @@
 # Changelog
 
+## 1 November 2026
+- Remove Vignesh from draft email recipients at his request. Rahul and Abhinav remain subscribed. Update the recipient regression and active deployment.
+
 ## 29 October 2026
 - Switch both the marketing writer and independent reviewer from Hermes/OpenRouter to the existing Codex ChatGPT subscription app-server integration. Require subscription authentication, disable tools/context import, use strict schemas and retain measured model/usage metadata.
 - Remove the old inference worker and OpenRouter configuration template. Preserve writing/review prompts, editorial cadence, recipient list, screenshot evidence, bounded retries and durable email duplication protection. No API-key or paid fallback.
