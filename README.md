@@ -2,7 +2,6 @@
 
 An independent server agent that captures SmartMeet UI, writes sales-focused LinkedIn drafts using **the existing signed-in Codex subscription**, reviews the claims and emails the draft (with a screenshot for feature demos) to:
 
-- rahuljalan23.rj@gmail.com
 - abhinav.saxena1730@gmail.com
 
 Posting is manual. There is no LinkedIn token, browser login or publishing endpoint.

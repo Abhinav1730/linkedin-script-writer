@@ -1,5 +1,8 @@
 # Changelog
 
+## 3 November 2026
+- Remove Rahul from draft email recipients at his request. Abhinav remains subscribed. Update the recipient regression and active deployment.
+
 ## 1 November 2026
 - Remove Vignesh from draft email recipients at his request. Rahul and Abhinav remain subscribed. Update the recipient regression and active deployment.
 
